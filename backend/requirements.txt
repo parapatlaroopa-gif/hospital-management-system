@@ -1,0 +1,9 @@
+Django==6.0.8
+djangorestframework
+django-cors-headers
+mysqlclient
+gunicorn
+whitenoise
+dj-database-url
+psycopg2-binary
+python-dotenv
