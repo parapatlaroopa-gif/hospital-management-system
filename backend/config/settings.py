@@ -13,11 +13,12 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5(ajl7o4qrdz2-h$rca9^zz!l4=-*bn1ayk47-dbc&r1wh@hk^'
-
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-local-development-key"
+)
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = ['*']
 
 
@@ -87,9 +88,21 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite").lower()
+# Database
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-if DB_ENGINE == "mysql":
+if DATABASE_URL:
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
+else:
+    # Local development - MySQL
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
@@ -98,13 +111,6 @@ if DB_ENGINE == "mysql":
             "PASSWORD": os.environ.get("DB_PASSWORD", "paraRupa#@1604"),
             "HOST": os.environ.get("DB_HOST", "localhost"),
             "PORT": os.environ.get("DB_PORT", "3306"),
-        }
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
@@ -148,9 +154,12 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://hospital-management-system-uam9.onrender.com",
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173"
+    ).split(",")
+    if origin.strip()
 ]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
