@@ -192,11 +192,11 @@ if DATABASE_URL:
         )
     }
 
+    
     DATABASES["default"]["OPTIONS"] = {
-        "ssl": {
-            "ssl_mode": "REQUIRED"
-        }
-    }
+    "ssl_mode": "REQUIRED"
+}
+
 else:
     # Local development - MySQL
     DATABASES = {
